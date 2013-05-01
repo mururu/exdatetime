@@ -108,13 +108,17 @@ defrecord DateTime, year: 1970, month: 1, day: 1, hour: 0, minute: 0, sec: 0, na
     { 12, 0 + 31 + 29 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 }
   ]
 
-  def now do
-    { megasec, sec, microsec } = :erlang.now
+  # for tracer
+  def from_timestamp({ megasec, sec, microsec }) do
     l = :calendar.now_to_local_time({ megasec, sec, microsec })
     u = :calendar.now_to_universal_time({ megasec, sec, microsec })
     offset = calc_offset(l, u)
     {{ year, month, day }, { hour, minute, sec }} = l
     new [year: year, month: month, day: day, hour: hour, minute: minute, sec: sec, nanosec: microsec * 1000, offset: offset]
+  end
+
+  def now do
+    from_timestamp(:erlang.now)
   end
 
   defp calc_offset(local, universal) do
